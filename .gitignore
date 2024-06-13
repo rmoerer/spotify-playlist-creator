@@ -1,0 +1,9 @@
+.env
+__pycache__/
+.streamlit/
+*.toml
+.env
+.cache
+.vscode/
+.venv/
+venv/
