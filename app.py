@@ -17,7 +17,7 @@ load_dotenv()
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 REDIRECT_URI = os.getenv('REDIRECT_URI')
-SCOPE = 'playlist-read-private playlist-modify-public'
+SCOPE = 'playlist-read-private playlist-modify-public playlist-modify-private'
 
 # Initialize Streamlit app
 st.title('Spotify Playlist Creator')
