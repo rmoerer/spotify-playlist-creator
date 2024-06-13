@@ -37,9 +37,7 @@ if 'token_info' not in st.session_state:
     
     if not token_info:
         auth_url = sp_oauth.get_authorize_url()
-        st.markdown(f"""
-        <a href="{auth_url}" target = "_self"> Click here to authorize with Spotify </a>
-        """, unsafe_allow_html=True)
+        st.link_button("Authorize with Spotify", auth_url)
         st.stop()
     else:
         st.session_state.token_info = token_info
