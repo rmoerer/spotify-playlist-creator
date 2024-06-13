@@ -96,6 +96,7 @@ if st.button('Generate Playlist') and prompt:
     tracks_df = sort_by_cosine_similarity(tracks_df, text_col="text", prompt=tracks_prompt)
     tracks_df = tracks_df.head(50)
     st.session_state.tracks_df = tracks_df
+    st.session_state.prompt = prompt
     
     # print tracks to be added to the playlist
     message_placeholder.empty()
@@ -109,7 +110,7 @@ if st.session_state.tracks_displayed:
         if len(prompt) > 100:
             playlist_name = make_title_model().generate_content(prompt).text.strip()
         else:
-            playlist_name = prompt
+            playlist_name = st.session_state.prompt
         playlist = sp.user_playlist_create(sp.me()['id'], playlist_name, public=False)
         # Add tracks to the playlist
         for uri in st.session_state.tracks_df['track_uri']:
