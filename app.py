@@ -22,9 +22,10 @@ SCOPE = 'playlist-read-private playlist-modify-public'
 # Initialize Streamlit app
 st.title('Spotify Playlist Creator')
 
-# Spotify authentication
+sp_oauth = SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET, redirect_uri=REDIRECT_URI, scope=SCOPE)
+
+# Check if token_info is not in session state
 if 'token_info' not in st.session_state:
-    sp_oauth = SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET, redirect_uri=REDIRECT_URI, scope=SCOPE)
     token_info = sp_oauth.get_cached_token()
     
     if not token_info:
@@ -34,9 +35,9 @@ if 'token_info' not in st.session_state:
     else:
         st.session_state.token_info = token_info
 
-if 'code' in st.query_params:
-    sp_oauth = SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET, redirect_uri=REDIRECT_URI, scope=SCOPE)
-    code = st.query_params['code'][0]
+# Check if 'code' is in the query parameters after redirection
+if 'code' in st.experimental_get_query_params():
+    code = st.experimental_get_query_params()['code']
     token_info = sp_oauth.get_access_token(code)
     st.session_state.token_info = token_info
     st.experimental_rerun()
@@ -46,12 +47,9 @@ if 'token_info' in st.session_state:
     token_info = st.session_state.token_info
     sp = spotipy.Spotify(auth=token_info['access_token'])
 
-    # Display some information or functionality using Spotify API
+    # Display user profile information
     user_profile = sp.current_user()
     st.write(f"Logged in as {user_profile['display_name']}")
-
-if 'tracks_displayed' not in st.session_state:
-    st.session_state.tracks_displayed = False
 
 # User input for playlist prompt
 prompt = st.text_input('Enter a prompt for your playlist:')
