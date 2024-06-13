@@ -26,6 +26,7 @@ st.title('Spotify Playlist Creator')
 if 'token_info' not in st.session_state:
     sp_oauth = SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET, redirect_uri=REDIRECT_URI, scope=SCOPE)
     token_info = sp_oauth.get_cached_token()
+    
     if not token_info:
         auth_url = sp_oauth.get_authorize_url()
         st.write(f"### [Click here to authorize with Spotify]({auth_url})")
@@ -33,8 +34,24 @@ if 'token_info' not in st.session_state:
     else:
         st.session_state.token_info = token_info
 
-token_info = st.session_state.token_info
-sp = spotipy.Spotify(auth=token_info['access_token'])
+# Handling redirect back from Spotify with the auth code
+query_params = st.query_params
+
+if 'code' in query_params:
+    sp_oauth = SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET, redirect_uri=REDIRECT_URI, scope=SCOPE)
+    code = query_params['code'][0]
+    token_info = sp_oauth.get_access_token(code)
+    st.session_state.token_info = token_info
+    st.experimental_rerun()
+
+# If token_info is in session state, proceed with Spotify API calls
+if 'token_info' in st.session_state:
+    token_info = st.session_state.token_info
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+
+    # Display some information or functionality using Spotify API
+    user_profile = sp.current_user()
+    st.write(f"Logged in as {user_profile['display_name']}")
 
 if 'tracks_displayed' not in st.session_state:
     st.session_state.tracks_displayed = False
