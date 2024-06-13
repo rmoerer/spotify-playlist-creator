@@ -34,12 +34,9 @@ if 'token_info' not in st.session_state:
     else:
         st.session_state.token_info = token_info
 
-# Handling redirect back from Spotify with the auth code
-query_params = st.query_params
-
-if 'code' in query_params:
+if 'code' in st.query_params:
     sp_oauth = SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET, redirect_uri=REDIRECT_URI, scope=SCOPE)
-    code = query_params['code'][0]
+    code = st.query_params['code'][0]
     token_info = sp_oauth.get_access_token(code)
     st.session_state.token_info = token_info
     st.experimental_rerun()
