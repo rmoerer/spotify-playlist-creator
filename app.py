@@ -7,7 +7,7 @@ import pandas as pd
 import google.generativeai as genai
 from sklearn.metrics.pairwise import cosine_similarity
 import streamlit as st
-from gemini_stuff import make_search_model, make_playlist_model, make_tracks_model, sort_by_cosine_similarity
+from gemini_stuff import make_search_model, make_playlist_model, make_tracks_model, make_title_model, sort_by_cosine_similarity
 from spotify_stuff import get_playlists, get_tracks
 
 # Load environment variables
@@ -24,23 +24,25 @@ st.title('Spotify Playlist Creator')
 
 sp_oauth = SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET, redirect_uri=REDIRECT_URI, scope=SCOPE)
 
+# Check if 'code' is in the query parameters after redirection
+if 'code' in st.query_params:
+    code = st.query_params['code']
+    token_info = sp_oauth.get_access_token(code)
+    st.session_state.token_info = token_info
+
 # Check if token_info is not in session state
 if 'token_info' not in st.session_state:
-    token_info = sp_oauth.get_cached_token()
+    token_info = None
+    # token_info = sp_oauth.get_cached_token()
     
     if not token_info:
         auth_url = sp_oauth.get_authorize_url()
-        st.write(f"### [Click here to authorize with Spotify]({auth_url})")
+        st.markdown(f"""
+        <a href="{auth_url}" target = "_self"> Click here to authorize with Spotify </a>
+        """, unsafe_allow_html=True)
         st.stop()
     else:
         st.session_state.token_info = token_info
-
-# Check if 'code' is in the query parameters after redirection
-if 'code' in st.experimental_get_query_params():
-    code = st.experimental_get_query_params()['code']
-    token_info = sp_oauth.get_access_token(code)
-    st.session_state.token_info = token_info
-    st.experimental_rerun()
 
 # If token_info is in session state, proceed with Spotify API calls
 if 'token_info' in st.session_state:
@@ -50,6 +52,9 @@ if 'token_info' in st.session_state:
     # Display user profile information
     user_profile = sp.current_user()
     st.write(f"Logged in as {user_profile['display_name']}")
+
+if 'tracks_displayed' not in st.session_state:
+    st.session_state.tracks_displayed = False
 
 # User input for playlist prompt
 prompt = st.text_input('Enter a prompt for your playlist:')
@@ -103,7 +108,10 @@ if st.button('Generate Playlist') and prompt:
 
 if st.session_state.tracks_displayed:
     if st.button('Create Playlist'):
-        playlist_name = prompt
+        if len(prompt) > 100:
+            playlist_name = make_title_model().generate_content(prompt).text.strip()
+        else:
+            playlist_name = prompt
         playlist = sp.user_playlist_create(sp.me()['id'], playlist_name, public=False)
         # Add tracks to the playlist
         for uri in st.session_state.tracks_df['track_uri']:

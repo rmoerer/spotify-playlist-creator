@@ -106,6 +106,20 @@ def make_tracks_model(categories_list):
         """
     )
 
+def make_title_model():
+    return genai.GenerativeModel(
+        'gemini-1.5-flash',
+        system_instruction="""
+        The user is inputting a prompt for generating a playlist. Your goal is to take in the user prompt and to return a title
+        for the playlist that matches the sentiment of the user prompt. The returned title should be single string that 
+        is no more than 100 characters long.
+
+        For example,
+
+        "title string"
+        """
+    )
+
 def sort_by_cosine_similarity(data, text_col, prompt):
     response = genai.embed_content(
         model="models/embedding-001",
