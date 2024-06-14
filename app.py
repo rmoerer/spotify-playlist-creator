@@ -107,11 +107,11 @@ if st.button('Generate Playlist') and prompt:
 
 if st.session_state.tracks_displayed:
     if st.button('Create Playlist'):
-        if len(prompt) > 100:
+        if len(st.session_state.prompt) > 100:
             playlist_name = make_title_model().generate_content(prompt).text.strip()
         else:
             playlist_name = st.session_state.prompt
-        playlist = sp.user_playlist_create(sp.me()['id'], playlist_name, public=False)
+        playlist = sp.user_playlist_create(sp.current_user()['id'], playlist_name, public=False)
         # Add tracks to the playlist
         for uri in st.session_state.tracks_df['track_uri']:
             sp.playlist_add_items(playlist['id'], [uri])
